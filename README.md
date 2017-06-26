@@ -16,13 +16,13 @@ Usage is pretty simple. Just run the following two commands from the command lin
 > python optimise.py
 ```
 
-## Appendix
+## Notes
 
 Some notes on each of the modules
 
 #### `fetch_fpl_history`
 
-Simply run `python fetch_fpl_history.py` from the command line to fetch the data from the FPL website and save it to `data/fpl_history.csv`.
+`fetch_fpl_history` fetches the data from the FPL website and saves it to `data/fpl_history.csv`.
 
 This file includes a call to `time.sleep` so that we don't overload the FPL website's servers. Please bear this in mind and when scraping.
 
