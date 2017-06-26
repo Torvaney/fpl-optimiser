@@ -1,0 +1,7 @@
+requests==2.11.1
+pandas==0.18.1
+SQLAlchemy==1.1.4
+numpy==1.12.0
+progressbar2==3.30.2
+pulp==1.6.5
+scikit_learn==0.18.2

@@ -1,0 +1,8 @@
+.DS_Store
+venv/
+
+data/*
+!data/readme.txt
+
+*.pyc
+__pycache__
