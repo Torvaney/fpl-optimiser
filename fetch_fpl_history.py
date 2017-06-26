@@ -74,4 +74,4 @@ def fetch_and_save_history(max_id=1000):
 
 
 if __name__ == '__main__':
-    fetch_all_player_histories()
+    fetch_and_save_history()
