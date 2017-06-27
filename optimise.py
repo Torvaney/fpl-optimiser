@@ -126,8 +126,10 @@ if __name__ == '__main__':
                         help='What formation should be used')
     parser.add_argument('--budget', default=None, type=float,
                         help='What is the maximum cost of the squad')
-    parser.add_argument('--season', default='2015/16', type=str,
+    parser.add_argument('--season', default='2016/17', type=str,
                         help='What season should be optimised.')
+    parser.add_argument('--end-cost', action='store_false',
+                        help='Use the current player cost.')
     args = parser.parse_args()
 
     squad, soln = get_optimal_squad(formation=args.formation,
