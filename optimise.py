@@ -15,8 +15,8 @@ def add_position_dummy(df):
 
 
 def add_team_dummy(df):
-    for t in df.team.unique():
-        df['team_' + str(t).lower()] = np.where(df.team == t, int(1), int(0))
+    for t in df.team_id.unique():
+        df['team_' + str(t).lower()] = np.where(df.team_id == t, int(1), int(0))
     return df
 
 
@@ -40,12 +40,10 @@ def get_optimal_squad(formation='2-5-5-3', budget=100.0, season='2016/17',
         player_info
         .loc[lambda df: df.season_name == season]
         .reset_index()
-        .assign(cost=lambda df: (df.start_cost / 10.) if use_start_cost else (df.end_cost / 10.),
-                position=lambda df: df.singular_name,
-                team=lambda df: df.team_id)
+        .assign(cost=lambda df: (df.start_cost / 10.) if use_start_cost else (df.end_cost / 10.))
         [['season_name', 'cost',
           'total_points', 'position',
-          'team', 'full_name']]
+          'team_id', 'full_name']]
         .pipe(add_position_dummy)
         .pipe(add_team_dummy)
     )
@@ -89,7 +87,7 @@ def get_optimal_squad(formation='2-5-5-3', budget=100.0, season='2016/17',
     fpl_problem += sum([player_mid[i] * x[i] for i in players]) == constraints['mid']
     fpl_problem += sum([player_fwd[i] * x[i] for i in players]) == constraints['fwd']
 
-    for t in season_stats.team:
+    for t in season_stats.team_id:
         player_team = dict(
             zip(season_stats.full_name, season_stats['team_' + str(t)]))
         fpl_problem += sum([player_team[i] * x[i] for i in players]) <= constraints['team']
@@ -134,6 +132,10 @@ if __name__ == '__main__':
 
     squad, soln = get_optimal_squad(formation=args.formation,
                                     budget=args.budget,
-                                    season=args.season)
-    print(pd.DataFrame(squad))
+                                    season=args.season,
+                                    use_start_cost=args.end_cost)
+    squad = (pd.DataFrame(squad)
+             .sort_values(by='position')
+             .reset_index(drop=True))
+    print(squad)
     print(soln)

@@ -65,12 +65,24 @@ def fetch_and_save_history(max_id=1000):
     positions = pd.DataFrame(fetch_positions())
 
     # Add position info and clean up columns
-    history = scores.merge(players, left_on='element_code',
-                           right_on='player_id')
-    history = history.merge(positions, left_on='position_id',
-                            right_on='id')
+    history = scores.merge(players, how='left',
+                           left_on='element_code', right_on='player_id')
+    history = history.merge(positions, how='left',
+                            left_on='position_id', right_on='id')
 
-    history.to_csv(os.path.join(DATA_DIR, 'fpl_history.csv'), index=False)
+    columns = ['player_id', 'full_name', 'team_id', 'singular_name',
+               'start_cost', 'end_cost', 'total_points', 'season_name',
+               'minutes', 'bonus', 'bps', 'goals_scored', 'assists',
+               'goals_conceded', 'clean_sheets', 'yellow_cards', 'red_cards',
+               'penalties_missed', 'saves', 'penalties_saved']
+    history = history[columns]
+    history = history.rename(columns={
+        'singular_name': 'position',
+        'bps': 'bonus_points'
+    })
+
+    history.to_csv(os.path.join(DATA_DIR, 'fpl_history.csv'),
+                   index=False, encoding='utf-8')
 
 
 if __name__ == '__main__':
