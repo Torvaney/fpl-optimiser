@@ -20,8 +20,8 @@ def add_team_dummy(df):
     return df
 
 
-def get_optimal_squad(formation='2-5-5-3', budget=100.0, season='2016/17',
-                      use_start_cost=True):
+def get_optimal_squad(data, formation='2-5-5-3', budget=100.0, season='2016/17',
+                      use_now_cost=False, optimise_on='total_points'):
     min_player_cost = 4.
     n_players = sum(int(i) for i in args.formation.split('-'))
     max_budget = 100 - (15 - n_players)*min_player_cost
@@ -33,17 +33,11 @@ def get_optimal_squad(formation='2-5-5-3', budget=100.0, season='2016/17',
         warnings.warn('Supplied budget exceeds expected maximum of '
                       '{0}'.format(max_budget))
 
-    # Load the data
-    player_info = pd.read_csv(os.path.join(DATA_DIR, 'fpl_history.csv'))
-
     season_stats = (
-        player_info
+        data
         .loc[lambda df: df.season_name == season]
         .reset_index()
-        .assign(cost=lambda df: (df.start_cost / 10.) if use_start_cost else (df.end_cost / 10.))
-        [['season_name', 'cost',
-          'total_points', 'position',
-          'team_id', 'full_name']]
+        .assign(cost=lambda df: (df.now_cost / 10.) if use_now_cost else (df.start_cost / 10.))
         .pipe(add_position_dummy)
         .pipe(add_team_dummy)
     )
@@ -59,7 +53,7 @@ def get_optimal_squad(formation='2-5-5-3', budget=100.0, season='2016/17',
 
     # player score data
     player_points = dict(
-        zip(season_stats.full_name, np.array(season_stats.total_points)))
+        zip(season_stats.full_name, np.array(season_stats[optimise_on])))
 
     # objective function
     fpl_problem += sum([player_points[i] * x[i] for i in players])
@@ -126,14 +120,24 @@ if __name__ == '__main__':
                         help='What is the maximum cost of the squad')
     parser.add_argument('--season', default='2016/17', type=str,
                         help='What season should be optimised.')
-    parser.add_argument('--end-cost', action='store_false',
-                        help='Use the current player cost.')
+    parser.add_argument('--now-cost', action='store_true',
+                        help='Use the current season\'s player cost.')
+    parser.add_argument('--optimise-on', default='total_points', type=str,
+                        help='What value should be optimised.')
+    parser.add_argument('--exclude-players', default='', type=str,
+                        help='Names of players to exclude, separated by `-`')
     args = parser.parse_args()
 
-    squad, soln = get_optimal_squad(formation=args.formation,
+    exclude_players = args.exclude_players.split('-')
+    player_info = pd.read_csv(os.path.join(DATA_DIR, 'fpl_history.csv'))
+    player_info = player_info.loc[lambda df: ~df['full_name'].isin(exclude_players)]
+
+    squad, soln = get_optimal_squad(player_info,
+                                    formation=args.formation,
                                     budget=args.budget,
                                     season=args.season,
-                                    use_start_cost=args.end_cost)
+                                    use_now_cost=args.now_cost,
+                                    optimise_on=args.optimise_on)
     squad = (pd.DataFrame(squad)
              .sort_values(by='position')
              .reset_index(drop=True))

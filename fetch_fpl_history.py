@@ -53,7 +53,9 @@ def fetch_player_info():
             'position_id': player['element_type'],
             'player_id': player['code'],
             'team_id': player['team_code'],
-            'full_name': player['first_name'] + ' ' + player['second_name']
+            'full_name': player['first_name'] + ' ' + player['second_name'],
+            'now_cost': player['now_cost'],
+            'selected_by': player['selected_by_percent']
         })
     return positions
 
@@ -65,14 +67,14 @@ def fetch_and_save_history(max_id=1000):
     positions = pd.DataFrame(fetch_positions())
 
     # Add position info and clean up columns
-    history = scores.merge(players, how='left',
+    history = scores.merge(players, how='outer',
                            left_on='element_code', right_on='player_id')
-    history = history.merge(positions, how='left',
+    history = history.merge(positions, how='outer',
                             left_on='position_id', right_on='id')
 
     columns = ['player_id', 'full_name', 'team_id', 'singular_name',
-               'start_cost', 'end_cost', 'total_points', 'season_name',
-               'minutes', 'bonus', 'bps', 'goals_scored', 'assists',
+               'start_cost', 'end_cost', 'now_cost', 'total_points', 'season_name',
+               'minutes', 'bonus', 'bps', 'goals_scored', 'assists', 'selected_by',
                'goals_conceded', 'clean_sheets', 'yellow_cards', 'red_cards',
                'penalties_missed', 'saves', 'penalties_saved']
     history = history[columns]
