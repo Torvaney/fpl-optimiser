@@ -83,6 +83,8 @@ def fetch_and_save_history(max_id=1000):
         'bps': 'bonus_points'
     })
 
+    positions.to_csv(os.path.join(DATA_DIR, 'positions.csv'),
+                     index=False, encoding='utf-8')
     history.to_csv(os.path.join(DATA_DIR, 'fpl_history.csv'),
                    index=False, encoding='utf-8')
 

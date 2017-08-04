@@ -138,8 +138,21 @@ if __name__ == '__main__':
                                     season=args.season,
                                     use_now_cost=args.now_cost,
                                     optimise_on=args.optimise_on)
-    squad = (pd.DataFrame(squad)
-             .sort_values(by='position')
-             .reset_index(drop=True))
-    print(squad)
-    print(soln)
+
+    # Prettify optimised squad
+    positions = pd.read_csv(os.path.join(DATA_DIR, 'positions.csv'))
+    squad = (
+        pd.DataFrame(squad)
+        .merge(positions, left_on='position', right_on='singular_name')
+        .sort_values(by='id')  # sort by position id (GKs first)
+        .reset_index(drop=True)
+        [['position', 'name', 'cost', 'points']]  # reorder columns
+    )
+    squad.columns = [col.capitalize() for col in squad.columns]
+
+    # Display output
+    print(squad.to_string(index=False))
+    print('')  # extra line break
+    for key, val in soln.items():
+        pretty_key = key.replace('_', ' ').capitalize()
+        print('{0}:\t{1}'.format(pretty_key, val))
